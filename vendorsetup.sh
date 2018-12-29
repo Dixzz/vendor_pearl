@@ -1,1 +1,1 @@
-add_lunch_combo xenonhd_mido-userdebug
+add_lunch_combo pearl_mido-userdebug

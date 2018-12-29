@@ -8,8 +8,8 @@ bootstrap_go_package {
 }
 
 bootstrap_go_package {
-    name: "soong-pearl-generator",
-    pkgPath: "pearl/soong/generator",
+    name: "soong-aosp-generator",
+    pkgPath: "aosp/soong/generator",
     deps: [
         "blueprint",
         "blueprint-pathtools",
@@ -24,7 +24,7 @@ bootstrap_go_package {
     pluginFor: ["soong_build"],
 }
 
-pearl_generator {
+aosp_generator {
     name: "generated_kernel_includes",
 
     // The headers make command

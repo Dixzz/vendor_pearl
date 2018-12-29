@@ -2,6 +2,14 @@
 $(call inherit-product-if-exists, vendor/extra/product.mk)
 
 PRODUCT_BRAND ?= Pearl
+#PEARL_VERSION_NUMBER := Beta-v1.0
+
+ifndef PEARL_BUILDTYPE
+PEARL_BUILDTYPE := UNOFFICIAL
+endif
+
+PEARL_MOD_VERSION := Sparky-White
+PEARL_VERSION := Pearl-$(PEARL_MOD_VERSION)-$(shell date -u +%Y%m%d)-$(PEARL_BUILDTYPE)-$(PEARL_BUILD)
 
 PRODUCT_BUILD_PROP_OVERRIDES += BUILD_UTC_DATE=0
 
@@ -250,123 +258,7 @@ endif
 PRODUCT_ENFORCE_RRO_EXCLUDED_OVERLAYS += vendor/pearl/overlay
 DEVICE_PACKAGE_OVERLAYS += vendor/pearl/overlay/common
 
-PRODUCT_VERSION_MAJOR = 16
-PRODUCT_VERSION_MINOR = 0
-PRODUCT_VERSION_MAINTENANCE := 0
-
-ifeq ($(TARGET_VENDOR_SHOW_MAINTENANCE_VERSION),true)
-    PEARL_VERSION_MAINTENANCE := $(PRODUCT_VERSION_MAINTENANCE)
-else
-    PEARL_VERSION_MAINTENANCE := 0
-endif
-
-# Set PEARL_BUILDTYPE from the env RELEASE_TYPE, for jenkins compat
-
-ifndef PEARL_BUILDTYPE
-    ifdef RELEASE_TYPE
-        # Starting with "PEARL_" is optional
-        RELEASE_TYPE := $(shell echo $(RELEASE_TYPE) | sed -e 's|^PEARL_||g')
-        PEARL_BUILDTYPE := $(RELEASE_TYPE)
-    endif
-endif
-
-# Filter out random types, so it'll reset to UNOFFICIAL
-ifeq ($(filter RELEASE NIGHTLY SNAPSHOT EXPERIMENTAL,$(PEARL_BUILDTYPE)),)
-    PEARL_BUILDTYPE :=
-endif
-
-ifdef PEARL_BUILDTYPE
-    ifneq ($(PEARL_BUILDTYPE), SNAPSHOT)
-        ifdef PEARL_EXTRAVERSION
-            # Force build type to EXPERIMENTAL
-            PEARL_BUILDTYPE := EXPERIMENTAL
-            # Remove leading dash from PEARL_EXTRAVERSION
-            PEARL_EXTRAVERSION := $(shell echo $(PEARL_EXTRAVERSION) | sed 's/-//')
-            # Add leading dash to PEARL_EXTRAVERSION
-            PEARL_EXTRAVERSION := -$(PEARL_EXTRAVERSION)
-        endif
-    else
-        ifndef PEARL_EXTRAVERSION
-            # Force build type to EXPERIMENTAL, SNAPSHOT mandates a tag
-            PEARL_BUILDTYPE := EXPERIMENTAL
-        else
-            # Remove leading dash from PEARL_EXTRAVERSION
-            PEARL_EXTRAVERSION := $(shell echo $(PEARL_EXTRAVERSION) | sed 's/-//')
-            # Add leading dash to PEARL_EXTRAVERSION
-            PEARL_EXTRAVERSION := -$(PEARL_EXTRAVERSION)
-        endif
-    endif
-else
-    # If PEARL_BUILDTYPE is not defined, set to UNOFFICIAL
-    PEARL_BUILDTYPE := UNOFFICIAL
-    PEARL_EXTRAVERSION :=
-endif
-
-ifeq ($(PEARL_BUILDTYPE), UNOFFICIAL)
-    ifneq ($(TARGET_UNOFFICIAL_BUILD_ID),)
-        PEARL_EXTRAVERSION := -$(TARGET_UNOFFICIAL_BUILD_ID)
-    endif
-endif
-
-ifeq ($(PEARL_BUILDTYPE), RELEASE)
-    ifndef TARGET_VENDOR_RELEASE_BUILD_ID
-        PEARL_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(PEARL_BUILD)
-    else
-        ifeq ($(TARGET_BUILD_VARIANT),user)
-            ifeq ($(PEARL_VERSION_MAINTENANCE),0)
-                PEARL_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(TARGET_VENDOR_RELEASE_BUILD_ID)-$(PEARL_BUILD)
-            else
-                PEARL_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PEARL_VERSION_MAINTENANCE)-$(TARGET_VENDOR_RELEASE_BUILD_ID)-$(PEARL_BUILD)
-            endif
-        else
-            PEARL_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(PEARL_BUILD)
-        endif
-    endif
-else
-    ifeq ($(PEARL_VERSION_MAINTENANCE),0)
-        ifeq ($(PEARL_VERSION_APPEND_TIME_OF_DAY),true)
-            PEARL_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(shell date -u +%Y%m%d_%H%M%S)-$(PEARL_BUILDTYPE)$(PEARL_EXTRAVERSION)-$(PEARL_BUILD)
-        else
-            PEARL_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(shell date -u +%Y%m%d)-$(PEARL_BUILDTYPE)$(PEARL_EXTRAVERSION)-$(PEARL_BUILD)
-        endif
-    else
-        ifeq ($(PEARL_VERSION_APPEND_TIME_OF_DAY),true)
-            PEARL_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PEARL_VERSION_MAINTENANCE)-$(shell date -u +%Y%m%d_%H%M%S)-$(PEARL_BUILDTYPE)$(PEARL_EXTRAVERSION)-$(PEARL_BUILD)
-        else
-            PEARL_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PEARL_VERSION_MAINTENANCE)-$(shell date -u +%Y%m%d)-$(PEARL_BUILDTYPE)$(PEARL_EXTRAVERSION)-$(PEARL_BUILD)
-        endif
-    endif
-endif
-
-PRODUCT_EXTRA_RECOVERY_KEYS += \
-    vendor/pearl/build/target/product/security/pearl
-
--include vendor/pearl-priv/keys/keys.mk
-
-PEARL_DISPLAY_VERSION := $(PEARL_VERSION)
-
-ifneq ($(PRODUCT_DEFAULT_DEV_CERTIFICATE),)
-ifneq ($(PRODUCT_DEFAULT_DEV_CERTIFICATE),build/target/product/security/testkey)
-    ifneq ($(PEARL_BUILDTYPE), UNOFFICIAL)
-        ifndef TARGET_VENDOR_RELEASE_BUILD_ID
-            ifneq ($(PEARL_EXTRAVERSION),)
-                # Remove leading dash from PEARL_EXTRAVERSION
-                PEARL_EXTRAVERSION := $(shell echo $(PEARL_EXTRAVERSION) | sed 's/-//')
-                TARGET_VENDOR_RELEASE_BUILD_ID := $(PEARL_EXTRAVERSION)
-            else
-                TARGET_VENDOR_RELEASE_BUILD_ID := $(shell date -u +%Y%m%d)
-            endif
-        else
-            TARGET_VENDOR_RELEASE_BUILD_ID := $(TARGET_VENDOR_RELEASE_BUILD_ID)
-        endif
-        ifeq ($(PEARL_VERSION_MAINTENANCE),0)
-            PEARL_DISPLAY_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(TARGET_VENDOR_RELEASE_BUILD_ID)-$(PEARL_BUILD)
-        else
-            PEARL_DISPLAY_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PEARL_VERSION_MAINTENANCE)-$(TARGET_VENDOR_RELEASE_BUILD_ID)-$(PEARL_BUILD)
-        endif
-    endif
-endif
-endif
-
 -include $(WORKSPACE)/build_env/image-auto-bits.mk
 -include vendor/pearl/config/partner_gms.mk
+
+$(call prepend-product-if-exists, vendor/extra/product.mk)
