@@ -16,7 +16,7 @@
 # -----------------------------------------------------------------
 # PEARL OTA update package
 
-PEARL_TARGET_PACKAGE := $(PRODUCT_OUT)/pearl-$(PEARL_VERSION).zip
+PEARL_TARGET_PACKAGE := $(PRODUCT_OUT)/$(PEARL_VERSION).zip
 
 .PHONY: bacon
 bacon: $(INTERNAL_OTA_PACKAGE_TARGET)
