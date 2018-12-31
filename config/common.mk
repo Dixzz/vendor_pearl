@@ -1,16 +1,6 @@
 # Allow vendor/extra to override any property by setting it first
 $(call inherit-product-if-exists, vendor/extra/product.mk)
 
-PRODUCT_BRAND ?= Pearl
-#PEARL_VERSION_NUMBER := Beta-v1.0
-
-ifndef PEARL_BUILDTYPE
-PEARL_BUILDTYPE := UNOFFICIAL
-endif
-
-PEARL_MOD_VERSION := Sparky-White
-PEARL_VERSION := Pearl-$(PEARL_MOD_VERSION)-$(shell date -u +%Y%m%d)-$(PEARL_BUILDTYPE)-$(PEARL_BUILD)
-
 PRODUCT_BUILD_PROP_OVERRIDES += BUILD_UTC_DATE=0
 
 ifeq ($(PRODUCT_GMS_CLIENTID_BASE),)
@@ -260,5 +250,8 @@ DEVICE_PACKAGE_OVERLAYS += vendor/pearl/overlay/common
 
 -include $(WORKSPACE)/build_env/image-auto-bits.mk
 -include vendor/pearl/config/partner_gms.mk
+
+# Version
+include vendor/pearl/config/version.mk
 
 $(call prepend-product-if-exists, vendor/extra/product.mk)
