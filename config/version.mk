@@ -22,10 +22,9 @@ PEARL_DISPLAY_VERSION := Pearl-$(PEARL_BASE_VERSION)-$(PEARL_BUILD_TYPE)
 ROM_FINGERPRINT := Pearl/$(PEARL_BASE_VERSION)/$(TARGET_PRODUCT_SHORT)/$(PEARL_BUILD_DATE)
 
 PRODUCT_PROPERTY_OVERRIDES += \
-
     ro.pearl.build.version=$(PEARL_BUILD_VERSION) \
     ro.pearl.version=$(PEARL_VERSION) \
     ro.pearl.releasetype=$(PEARL_BUILD_TYPE) \
     ro.mod.version=$(PEARL_MOD_VERSION) \
     ro.pearl.display.version=$(PEARL_DISPLAY_VERSION) \
-    ro.pearl.fingerprint=$(ROM_FINGERPRINT) 
+    ro.pearl.fingerprint=$(ROM_FINGERPRINT)
