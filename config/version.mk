@@ -1,27 +1,51 @@
-# Versioning System
-PEARL_BASE_VERSION = Sparky-White
+# Copyright (C) 2018 PearlOS
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-ifeq ($(PEARL_BUILD_TYPE), OFFICIAL)
-PEARL_VERSION := Pearl-$(PEARL_BASE_VERSION)-$(DATE)-$(PEARL_BUILD_TYPE)
-else
+PEARL_MOD_VERSION = 9.0
 
-    # If PEARL_BUILD_TYPE is not defined, set to UNOFFICIAL
-PEARL_BUILD_TYPE := UNOFFICIAL
-PEARL_VERSION := Pearl-$(PEARL_BASE_VERSION)-$(DATE)-$(PEARL_BUILD_TYPE)
+ifndef PEARL_BUILD_TYPE
+    PEARL_BUILD_TYPE := UNOFFICIAL
 endif
 
-TARGET_PRODUCT_SHORT := $(subst pearl_,,$(PEARL_BUILD_TYPE))
+ifeq ($(PEARL_BETA),true)
+    PEARL_BUILD_TYPE := BETA
+endif
 
-# Set all versions
-DATE := $(shell date -u +%Y%m%d)
+ifeq ($(PEARL_ALPHA),true)
+    PEARL_BUILD_TYPE := ALPHA
+endif
+
+CURRENT_DEVICE=$(shell echo "$(TARGET_PRODUCT)" | cut -d'_' -f 2,3)
+
+ifeq ($(PEARL_OFFICIAL),true)
+   LIST = $(shell curl -s https://raw.githubusercontent.com/PearlOS/vendor_pearl/pie/pearl.devices)
+   FOUND_DEVICE = $(filter $(CURRENT_DEVICE), $(LIST))
+    ifeq ($(FOUND_DEVICE),$(CURRENT_DEVICE))
+      IS_OFFICIAL=true
+      PEARL_BUILD_TYPE := OFFICIAL
+   else
+      PEARL_BUILD_TYPE := UNOFFICIAL
+   endif
+endif
+
 PEARL_BUILD_DATE := $(shell date -u +%Y%m%d-%H%M)
-PEARL_BUILD_VERSION := Pearl-$(PEARL_BASE_VERSION)-$(DATE)-$(PEARL_BUILD_TYPE)
-PEARL_VERSION := Pearl-$(PEARL_BASE_VERSION)-$(DATE)-$(PEARL_BUILD_TYPE)
-PEARL_MOD_VERSION := Pearl-$(PEARL_BASE_VERSION)-$(PEARL_BUILD_DATE)-$(PEARL_BUILD_TYPE)
-PEARL_DISPLAY_VERSION := Pearl-$(PEARL_BASE_VERSION)-$(PEARL_BUILD_TYPE)
-ROM_FINGERPRINT := Pearl/$(PEARL_BASE_VERSION)/$(TARGET_PRODUCT_SHORT)/$(PEARL_BUILD_DATE)
+PEARL_BUILD_VERSION := Pearl-$(PEARL_MOD_VERSION)-$(CURRENT_DEVICE)-$(PEARL_BUILD_TYPE)
+PEARL_VERSION := Pearl-$(PEARL_MOD_VERSION)-$(CURRENT_DEVICE)-$(PEARL_BUILD_TYPE)-$(PEARL_BUILD_DATE)
+ROM_FINGERPRINT := Pearl/$(PEARL_MOD_VERSION)/$(CURRENT_DEVICE)/$(PEARL_BUILD_DATE)
+PEARL_DISPLAY_VERSION := Pearl-$(PEARL_MOD_VERSION)-$(CURRENT_DEVICE)-$(PEARL_BUILD_TYPE)
 
-PRODUCT_PROPERTY_OVERRIDES += \
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     ro.pearl.build.version=$(PEARL_BUILD_VERSION) \
     ro.pearl.version=$(PEARL_VERSION) \
     ro.pearl.releasetype=$(PEARL_BUILD_TYPE) \
